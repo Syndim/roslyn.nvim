@@ -1,6 +1,12 @@
 local server = require("roslyn.server")
 local utils = require("roslyn.slnutils")
 
+---@param file_path string
+---@return string
+local function get_file_name(file_path)
+    return vim.fn.fnamemodify(file_path, ':t')
+end
+
 ---@param buf number
 ---@return boolean
 local function valid_buffer(buf)
@@ -235,7 +241,7 @@ local function start_with_solution(bufnr, cmd, sln, roslyn_config, on_init)
             vim.ui.select(sln, { prompt = "Select target solution: " }, function(file)
                 vim.lsp.stop_client(vim.lsp.get_clients({ name = "roslyn" }), true)
                 vim.g.roslyn_nvim_selected_solution = file
-                local dir = vim.fs.root(0, file) --[[@as string]]
+                local dir = vim.fs.root(0, get_file_name(file)) --[[@as string]]
                 wrap_roslyn(cmd, dir, roslyn_config, "sln", on_init(file))
             end)
         end, { desc = "Selects the sln file for the buffer: " .. bufnr })
@@ -244,7 +250,7 @@ local function start_with_solution(bufnr, cmd, sln, roslyn_config, on_init)
     local sln_file = get_sln_file(bufnr, sln, roslyn_config)
     if sln_file then
         vim.g.roslyn_nvim_selected_solution = sln_file
-        local sln_dir = vim.fs.root(bufnr, sln_file) --[[@as string]]
+        local sln_dir = vim.fs.root(bufnr, get_file_name(sln_file)) --[[@as string]]
         return wrap_roslyn(cmd, sln_dir, roslyn_config, "sln", on_init(sln_file))
     end
 
